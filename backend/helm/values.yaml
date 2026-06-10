@@ -1,0 +1,98 @@
+# =======================================
+# Deployment Configuration
+# =======================================
+image:
+  repository: ghcr.io/jinsoooooooo/template-fastapi
+  tag: "latest"
+  pullPolicy: Always
+containers:
+  replicas: 1
+  requests:
+    cpu: "256m"
+    memory: "256Mi"
+  limits:
+    cpu: "512m"
+    memory: "512Mi"
+
+# =======================================
+# Service Configuration (L4/L7 라우팅 전용으로 단순화)
+# =======================================
+service:
+  port: 80
+  targetPort: 8080
+
+  # Gunicorn Worker 설정 (인프라/운영 레이어로 배치)
+  worker: 1
+  workerTimeout: 180
+
+# =======================================
+# Autoscaling Configuration (HPA)
+# =======================================
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+    scaleDown:
+      stabilizationWindowSeconds: 300
+
+# =======================================
+# Environment Variables
+# =======================================
+env:
+  # 애플리케이션 사양 한 곳으로 통합
+  app:
+    name: "Sample FastAPI"
+    env: "prod"
+    logLevel: "info"
+    host: "0.0.0.0"
+    port: 8080
+
+  # Supabase
+  supabase:
+    url: "github-secret-supabase-url"
+    key: "github-secret-supabase-key"
+  # Database
+  database:
+    url: "github-secret-database-url"
+
+  # LLM
+  llm:
+    default_provider: "openai"
+    openai:
+      api_key: "github-secret-openai-api-key"
+      model: "gpt-5-nano"
+    gemini:
+      api_key: "github-secret-gemini-api-key" 
+      model: "gemini-2.5-flash-lite"
+    xai:
+      api_key: "github-secret-xai-api-key"
+      model: "grok-beta"
+
+  # Hugging Face
+  huggingface:
+    url: "https://leodev901-inference-server.hf.space/api/v1/embed"
+    token: "github-secret-hf-token"
+
+  # LangSmith
+  langsmith:
+    enabled: true
+    endpoint: "https://api.smith.langchain.com"
+    api_key: "github-secret-langsmith-api-key"
+    project: "vehicle-manual-poc"
+
+  # OpenTelemetry - Grafana
+  opentelemetry:
+    enabled: true
+    endpoint: "https://otlp-gateway-prod-ap-northeast-0.grafana.net/otlp/v1/logs"
+    instanceId: "1556283"
+    apiToken: "github-secret-opentelemetry-api-token"
+  
+  # NAVER API 설정
+  naver:
+    client_id: "github-secret-naver-client-id"
+    client_secret: "github-secret-naver-client-secret"

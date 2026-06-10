@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 
 async function fetchHealthSettings() {
-  const res = await fetch(`${process.env.API_BASE_URL}/healthz`, {
+  const res = await fetch(`${process.env.API_BASE_URL}/health`, {
     cache: 'no-store',
   });
   

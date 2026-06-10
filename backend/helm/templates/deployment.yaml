@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  # HPA를 사용하더라도 시작 replica 값은 필요합니다.
+  # 이후 실제 증감은 HPA가 메트릭을 보고 조절합니다.
+  replicas: {{ .Values.containers.replicas }}
+  selector:
+    matchLabels:
+      # 아래 template.metadata.labels 값과 반드시 같아야 합니다.
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        # Service와 Deployment가 같은 Pod를 바라보도록 라벨을 일관되게 맞춥니다.
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: template-api  
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            # 컨테이너 내부에서 애플리케이션이 실제로 listen 하는 포트입니다.
+            - containerPort: {{ .Values.service.targetPort }}
+
+          resources:
+            requests:
+              # HPA의 Utilization 기준은 requests 대비 사용률입니다.
+              # 그래서 CPU/Memory autoscaling을 쓰려면 requests 설정이 중요합니다
+              cpu: {{ .Values.containers.requests.cpu | quote }}
+              memory: {{ .Values.containers.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.containers.limits.cpu | quote }}
+              memory: {{ .Values.containers.limits.memory | quote }}
+          readinessProbe:
+            # readinessProbe가 성공한 Pod에만 Service 트래픽이 들어갑니다.
+            # 앱 기동 직후 아직 준비되지 않은 Pod로 요청이 가지 않게 막아줍니다.
+            httpGet:
+              path: /healthz
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 15   # LLM 모델 로딩 시간 고려 (너무 짧으면 재시작 루프)
+            periodSeconds: 30         # 30초 마다 체크 (보통 10초 권장)
+            timeoutSeconds: 10        # LLM 앱 특성상 응답이 살짝 느릴 수 있음
+            failureThreshold: 3       # 3번 연속 실패(90초)가 되어야 트래픽 차단
+            successThreshold: 1       # 한 번만 성공해도 즉시 트래픽 허용
+
+          livenessProbe:
+            # livenessProbe가 실패하면 K8s가 컨테이너를 강제 재시작합니다.
+            httpGet:
+              path: /healthz
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 60   # readiness보다 늦게 시작 (앱 충분히 뜬 후 판단)
+            periodSeconds: 600        # 너무 자주 하면 재시작 폭풍 발생 가능 - 10분 (Gunicorn이 1단 방어, 이건 최후 보루 역할)
+            timeoutSeconds: 10        # LLM 앱 특성상 응답이 살짝 느릴 수 있음
+            failureThreshold: 3       # 3번 연속 실패(30분)가 되어야 컨테이너 재시작
+          envFrom:
+            # configmap.yaml 파일을 컨테이너 환경 변수로 자동할당
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+            # secret.yaml 파일을 컨테이너 환경 변수로 자동할당 
+            - secretRef:
+                name: {{ .Release.Name }}-secret
+          # 위에서 'secretRef' 사용해서 아래는 불필요함
+          # env:
+          #   - name: SUPABASE_URL
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-secret
+          #         key: SUPABASE_URL
+          #   - name: SUPABASE_KEY
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-secret
+          #         key: SUPABASE_KEY
+          #   - name: DATABASE_URL
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-secret
+          #         key: DATABASE_URL
+          #   - name: OPENAI_API_KEY
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-secret
+          #         key: OPENAI_API_KEY
+          #   - name: GEMINI_API_KEY
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-secret
+          #         key: GEMINI_API_KEY
+          #   - name: HF_TOKEN
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: {{ .Release.Name }}-secret
+          #         key: HF_TOKEN 

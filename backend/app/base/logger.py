@@ -25,4 +25,10 @@ def setup_logging():
         serialize=True,             # [핵심] JSON 포맷으로 출력 (Datadog, ElasticSearch 등이 파싱하기 매우 쉬워짐)
         level=settings.APP_LOG_LEVEL.upper()
     )
+
+    logger.add(
+        sys.stderr,
+        format=log_format,
+        level=settings.APP_LOG_LEVEL.upper(),
+    )
     logger.info("Loguru 로깅 시스템 초기화 완료!")

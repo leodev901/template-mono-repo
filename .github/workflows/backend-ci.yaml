@@ -3,7 +3,7 @@ name: ci and push GHCR
 on:
   push:
     branches: ["main"]
-    paths: ["requirements.txt", "chart/**", ".github/workflows/ci.yaml"]
+    paths: ["requirements.txt", "backend/helm/*", ".github/workflows/ci.yaml"]
   workflow_dispatch:
     inputs:
       image_tag:
