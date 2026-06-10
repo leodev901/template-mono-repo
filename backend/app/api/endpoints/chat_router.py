@@ -9,9 +9,7 @@ from app.base.sse import SafeGuardStreamingResponse
 from app.agents.tools.registry import list_tools
 
 
-
 api_router = APIRouter(prefix="/api/v1", tags=["chat"])
-
 
 
 @api_router.post("/chat", response_model=CommonResponse)

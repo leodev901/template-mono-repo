@@ -10,7 +10,7 @@ from app.core.dependencies import get_chat_models
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.agents.chat.prompts import build_system_prompt
 from app.agents.chat.toolset import resolve_tools
-from app.core.llm_model import ResolvedModelConfig, resolve_model_config
+from app.core.llm_model import resolve_model_config
 
 
 CHAT_CHECKPOINTER = InMemorySaver()
