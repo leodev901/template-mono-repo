@@ -12,6 +12,7 @@ MODEL_CONFIG_ALIASES = {
         "provider": "google_genai",
         "models": {
             "fast": "gemini-2.5-flash-lite",
+            # "fast": "gemini-2.5-flash",
             "advanced": "gemini-3-flash-preview",
             # "advanced": "gemini-3.5-flash",
         },

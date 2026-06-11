@@ -1,21 +1,45 @@
 # app/agents/tools/registry.py
 
-from app.agents.tools.common.weather_tool import get_weather
-from app.agents.tools.common.news_tool import search_news
+from app.agents.tools.common.weather_tool import TOOLS as WEATHER_TOOLS
+from app.agents.tools.common.news_tool import TOOLS as NEWS_TOOLS
+from app.agents.tools.common.naver_search_tools import TOOLS as NAVER_TOOLS
 
-COMMON_TOOLS = {
-    get_weather.name: get_weather,
-    search_news.name: search_news,
-}
 
-def get_tool(name: str):
-    return COMMON_TOOLS.get(name)
+COMMON_TOOLS = [
+    *WEATHER_TOOLS,
+    *NEWS_TOOLS,
+    *NAVER_TOOLS,
+]
 
 def list_tools():
+    all_tools = [
+        *COMMON_TOOLS
+    ]
     return [
         {
             "name": tool.name,
-            "description": tool.description or "",
+            "description": tool.description,
         }
-        for tool in COMMON_TOOLS.values()
+        for tool in all_tools
+    ]
+
+
+def get_common_tools():
+    return COMMON_TOOLS
+
+
+# def get_legal_tools():
+#     return LEGAL_TOOLS
+
+
+def resolve_tools(tool_names: list[str] | None, candidates: list):
+    if not tool_names:
+        return []
+
+    tool_map = {tool.name: tool for tool in candidates}
+
+    return [
+        tool_map[name]
+        for name in tool_names
+        if name in tool_map
     ]

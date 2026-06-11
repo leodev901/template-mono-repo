@@ -5,7 +5,6 @@ from app.schemas.chat import ChatRequest
 from app.services.legal_agent_service import LegalAgentService
 
 from app.base.sse import SafeGuardStreamingResponse
-from app.agents.tools.registry import list_tools
 
 api_router = APIRouter(prefix="/api/v1/legal", tags=["legal_agent"])
 

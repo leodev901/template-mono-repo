@@ -13,3 +13,4 @@ def get_weather(
 
     return f"오늘 {location} 날씨는 자전거 입니다."
 
+TOOLS = [get_weather]

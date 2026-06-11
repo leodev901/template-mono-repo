@@ -18,7 +18,7 @@ class ChatRequest(BaseModel):
     llm_config: LlmConfig | None = Field(None, description="LLM Config")
     user_info: UserInfo | None = Field(None, description="요청 사용자 정보")
     message: str = Field(..., description="Message", example="간략히 자기소개를 해주세요")
-    tools: list[str] = Field(None, description="호출 도구 목록",example=["get_weather","search_news"])
+    tools: list[str] = Field(None, description="호출 도구 목록",example=["news_search","blog_search","web_search"])
 
 class ChatResponse(BaseModel):
     session_id: str

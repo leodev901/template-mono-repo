@@ -101,3 +101,4 @@ async def search_news(
         raise
 
 
+TOOLS = [search_news]
